@@ -7,7 +7,7 @@ import (
 
 type priorityQueue[E Elementer] interface {
 	Extract() E
-	IncreaseKey(i, key int) error
+	IncreaseKey(id string, key int) error
 	Insert(e E)
 }
 
@@ -25,12 +25,22 @@ func (d *heap[E]) Extract() E {
 	v := d.values[1]
 	d.values = d.values[1:]
 	d.Heapify()
+	delete(d.m, v.ID())
 	return v
 }
 
-func (d *heap[E]) IncreaseKey(i, key int) error {
-	if i > d.Size() {
+func (d *heap[E]) IncreaseKey(id string, key int) error {
+	_, exists := d.m[id]
+	if !exists {
 		return errors.New("no this element")
+	}
+
+	i := 0
+	for idx, e := range d.values {
+		if e.ID() == id {
+			i = idx
+			break
+		}
 	}
 
 	if d.max {
@@ -86,16 +96,26 @@ func (d *heap[E]) Insert(e E) {
 	}
 }
 
-func (d *heap[E]) maxInsert(e E) {
+func (d *heap[E]) maxInsert(e E) error {
+	if _, exists := d.m[e.ID()]; exists {
+		return errDup
+	}
+	d.m[e.ID()] = e
 	key := e.GetKey()
 	e.innerSetKey(math.MinInt)
 	d.values = append(d.values, e)
 	d.maxIncreaseKey(d.Size(), key)
+	return nil
 }
 
-func (d *heap[E]) minInsert(e E) {
+func (d *heap[E]) minInsert(e E) error {
+	if _, exists := d.m[e.ID()]; exists {
+		return errDup
+	}
+	d.m[e.ID()] = e
 	key := e.GetKey()
 	e.innerSetKey(math.MaxInt)
 	d.values = append(d.values, e)
 	d.minIncreaseKey(d.Size(), key)
+	return nil
 }

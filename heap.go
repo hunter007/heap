@@ -1,37 +1,53 @@
 package heap
 
-func NewMaxHeap[E Elementer](arrA []E) MaxHeaper[E] {
+import (
+	"errors"
+)
+
+func NewMaxHeap[E Elementer](arrA []E) (MaxHeaper[E], error) {
 	return newHeap(arrA, true)
 }
 
-func NewMinHeap[E Elementer](arrA []E) MinHeaper[E] {
+func NewMinHeap[E Elementer](arrA []E) (MinHeaper[E], error) {
 	return newHeap(arrA, false)
 }
 
-func NewMaxPriorityQueue[E Elementer](arrA []E) MaxPriorityQueue[E] {
+func NewMaxPriorityQueue[E Elementer](arrA []E) (MaxPriorityQueue[E], error) {
 	return newHeap(arrA, true)
 }
 
-func NewMinPriorityQueue[E Elementer](arrA []E) MinPriorityQueue[E] {
+func NewMinPriorityQueue[E Elementer](arrA []E) (MinPriorityQueue[E], error) {
 	return newHeap(arrA, false)
 }
 
-func newHeap[E Elementer](arrA []E, max bool) *heap[E] {
-	a := make([]E, 0, len(arrA)+1)
-	a = append(a, arrA[0])
+var errDup = errors.New("dup element")
+
+func newHeap[E Elementer](arrA []E, max bool) (*heap[E], error) {
+	a := make([]E, 1, len(arrA)+1)
 	a = append(a, arrA...)
 
 	d := &heap[E]{
 		values: a,
+		m:      map[string]E{},
 		max:    max,
+	}
+	for i := 1; i < len(a); i++ {
+		id := a[i].ID()
+		if _, exists := d.m[id]; exists {
+			if exists {
+				return nil, errDup
+			}
+		}
+		d.m[id] = a[i]
 	}
 
 	d.Heapify()
-	return d
+	return d, nil
 }
 
 type heap[E Elementer] struct {
 	values []E
+	m      map[string]E
 	max    bool
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/hunter007/heap"
 )
@@ -19,9 +20,8 @@ func main() {
 	}
 
 	es := make([]*element, 0, len(esMap))
-	// es = append(es, &element{})
 	for k, v := range esMap {
-		e := &element{heap.Element(v), k}
+		e := &element{heap.NewElement(v), k}
 		es = append(es, e)
 	}
 
@@ -30,8 +30,12 @@ func main() {
 		fmt.Println(e)
 	}
 
-	h := heap.NewMaxHeap[*element](es)
-	fmt.Println("\nMax Heap:")
+	h, err := heap.NewMinHeap[*element](es)
+	if err != nil {
+		fmt.Printf("error: %s", err)
+		os.Exit(-1)
+	}
+	fmt.Println("\nMin Heap:")
 	for i := 1; i <= h.Size(); i++ {
 		e := h.Get(i)
 		fmt.Println(e)
@@ -51,9 +55,13 @@ func main() {
 }
 
 type element struct {
-	heap.Elementer
+	*heap.Element
 
 	name string
+}
+
+func (e *element) ID() string {
+	return e.name
 }
 
 func (e *element) String() string {
