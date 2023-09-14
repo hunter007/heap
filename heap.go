@@ -1,49 +1,53 @@
-package deap
+package heap
 
-func NewMaxDeap[E Elementer](arrA []E) MaxDeaper[E] {
-	return newDeap(arrA, true)
+func NewMaxHeap[E Elementer](arrA []E) MaxHeaper[E] {
+	return newHeap(arrA, true)
 }
 
-func NewMinDeap[E Elementer](arrA []E) MinDeaper[E] {
-	return newDeap(arrA, false)
+func NewMinHeap[E Elementer](arrA []E) MinHeaper[E] {
+	return newHeap(arrA, false)
 }
 
 func NewMaxPriorityQueue[E Elementer](arrA []E) MaxPriorityQueue[E] {
-	return newDeap(arrA, true)
+	return newHeap(arrA, true)
 }
 
 func NewMinPriorityQueue[E Elementer](arrA []E) MinPriorityQueue[E] {
-	return newDeap(arrA, false)
+	return newHeap(arrA, false)
 }
 
-func newDeap[E Elementer](arrA []E, max bool) *deap[E] {
-	d := &deap[E]{
-		values: arrA,
-		max:    false,
+func newHeap[E Elementer](arrA []E, max bool) *heap[E] {
+	a := make([]E, 0, len(arrA)+1)
+	a = append(a, arrA[0])
+	a = append(a, arrA...)
+
+	d := &heap[E]{
+		values: a,
+		max:    max,
 	}
 
 	d.Heapify()
 	return d
 }
 
-type deap[E Elementer] struct {
+type heap[E Elementer] struct {
 	values []E
 	max    bool
 }
 
-func (d *deap[E]) Length() int {
+func (d *heap[E]) Length() int {
 	return cap(d.values) - 1
 }
 
-func (d *deap[E]) Size() int {
+func (d *heap[E]) Size() int {
 	return len(d.values) - 1
 }
 
-func (d *deap[E]) Get(i int) E {
+func (d *heap[E]) Get(i int) E {
 	return d.values[i]
 }
 
-func (d *deap[E]) Heapify() {
+func (d *heap[E]) Heapify() {
 	size := d.Size()
 	y := yeaf(size)
 
@@ -58,12 +62,12 @@ func (d *deap[E]) Heapify() {
 	}
 }
 
-func (d *deap[E]) Sort() {
+func (d *heap[E]) Sort() []E {
 	if d.max {
-		d.maxSort()
+		return d.maxSort()
 	}
 
-	d.minSort()
+	return d.minSort()
 }
 
 func parent(i int) int {

@@ -1,10 +1,10 @@
-package deap
+package heap
 
-func (d *deap[E]) Min() E {
+func (d *heap[E]) Min() E {
 	return d.values[1]
 }
 
-func (d *deap[E]) minHeapify(i, size int) {
+func (d *heap[E]) minHeapify(i, size int) {
 	left, right, min := left(i), right(i), 0
 
 	if left <= size && d.values[left].GetKey() < d.values[i].GetKey() {
@@ -25,7 +25,7 @@ func (d *deap[E]) minHeapify(i, size int) {
 	}
 }
 
-func (d *deap[E]) minSort() {
+func (d *heap[E]) minSort() []E {
 	for i := d.Size(); i > 1; i-- {
 		d.values[0] = d.values[1]
 		d.values[1] = d.values[i]
@@ -33,4 +33,11 @@ func (d *deap[E]) minSort() {
 
 		d.minHeapify(1, i-1)
 	}
+
+	ret := make([]E, 0, d.Size())
+	for _, e := range d.values[1:] {
+		ret = append(ret, e)
+	}
+	d.Heapify()
+	return ret
 }

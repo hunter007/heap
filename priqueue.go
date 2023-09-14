@@ -1,99 +1,101 @@
-package deap
+package heap
 
 import (
 	"errors"
 	"math"
 )
 
-type MaxPriorityQueue[E Elementer] interface {
-	MaxDeaper[E]
-
+type priorityQueue[E Elementer] interface {
 	Extract() E
 	IncreaseKey(i, key int) error
-	Insert(e E) error
+	Insert(e E)
+}
+
+type MaxPriorityQueue[E Elementer] interface {
+	MaxHeaper[E]
+	priorityQueue[E]
 }
 
 type MinPriorityQueue[E Elementer] interface {
-	MinDeaper[E]
-
-	Extract() E
-	IncreaseKey(i, key int) error
-	Insert(e E) error
+	MinHeaper[E]
+	priorityQueue[E]
 }
 
-func (d *deap[E]) Extract() E {
-	max := d.values[1]
+func (d *heap[E]) Extract() E {
+	v := d.values[1]
 	d.values = d.values[1:]
 	d.Heapify()
-	return max
+	return v
 }
 
-func (d *deap[E]) IncreaseKey(i, key int) error {
+func (d *heap[E]) IncreaseKey(i, key int) error {
+	if i > d.Size() {
+		return errors.New("no this element")
+	}
+
 	if d.max {
 		return d.maxIncreaseKey(i, key)
+	} else {
+		return d.minIncreaseKey(i, key)
 	}
-	return d.minIncreaseKey(i, key)
 }
 
-func (d *deap[E]) maxIncreaseKey(i, key int) error {
+func (d *heap[E]) maxIncreaseKey(i, key int) error {
 	if key <= d.values[i].GetKey() {
 		return errors.New("key is smaller")
 	}
 
 	d.values[i].SetKey(key)
 	for p := parent(i); i > 1; p = parent(i) {
-		if d.values[p].GetKey() < d.values[i].GetKey() {
-			d.values[0] = d.values[i]
-			d.values[i] = d.values[p]
-			d.values[p] = d.values[0]
+		if d.values[p].GetKey() >= d.values[i].GetKey() {
+			return nil
 		}
+
+		d.values[0] = d.values[i]
+		d.values[i] = d.values[p]
+		d.values[p] = d.values[0]
 		i = p
 	}
 	return nil
 }
 
-func (d *deap[E]) minIncreaseKey(i, key int) error {
+func (d *heap[E]) minIncreaseKey(i, key int) error {
 	if key >= d.values[i].GetKey() {
 		return errors.New("key is bigger")
 	}
 
 	d.values[i].SetKey(key)
 	for p := parent(i); i > 1; p = parent(i) {
-		if d.values[p].GetKey() > d.values[i].GetKey() {
-			d.values[0] = d.values[i]
-			d.values[i] = d.values[p]
-			d.values[p] = d.values[0]
+		if d.values[p].GetKey() <= d.values[i].GetKey() {
+			return nil
 		}
+
+		d.values[0] = d.values[i]
+		d.values[i] = d.values[p]
+		d.values[p] = d.values[0]
 		i = p
 	}
 	return nil
 }
 
-func (d *deap[E]) Insert(e E) error {
+func (d *heap[E]) Insert(e E) {
 	if d.max {
-		return d.maxInsert(e)
+		d.maxInsert(e)
+	} else {
+		d.minInsert(e)
 	}
-
-	return d.minInsert(e)
 }
 
-func (d *deap[E]) maxInsert(e E) error {
+func (d *heap[E]) maxInsert(e E) {
 	key := e.GetKey()
-	if key == math.MinInt {
-		return errors.New("key too small")
-	}
-	e.SetKey(math.MinInt)
+	e.innerSetKey(math.MinInt)
 	d.values = append(d.values, e)
-	return d.maxIncreaseKey(d.Size(), key)
+	d.maxIncreaseKey(d.Size(), key)
 }
 
-func (d *deap[E]) minInsert(e E) error {
+func (d *heap[E]) minInsert(e E) {
 	key := e.GetKey()
-	if key == math.MaxInt {
-		return errors.New("key too big")
-	}
-
-	e.SetKey(math.MaxInt)
+	e.innerSetKey(math.MaxInt)
 	d.values = append(d.values, e)
-	return d.minIncreaseKey(d.Size(), key)
+	d.minIncreaseKey(d.Size(), key)
 }
