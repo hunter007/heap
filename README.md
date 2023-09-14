@@ -1,3 +1,4 @@
 # heap
 
-实现了最大堆、最小堆、优先队列
+
+This library implements Max Heap, Min Heap and Priority Queue
